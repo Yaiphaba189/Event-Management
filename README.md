@@ -1,27 +1,43 @@
 # 🏟️ Evently — AI-Powered Event Management System
 
-Evently is an enterprise-grade, full-stack event planning and engagement web application customized for campus demographics (like **Manipur University**). It integrates a modern Next.js client-server dashboard with a high-performance Python FastAPI machine learning microservice to deliver real-time attendance forecasting, collaborative personalized event suggestions, and participant feedback sentiment intelligence.
+Evently is an enterprise-grade, full-stack event planning and optimization web application customized for campus demographics (such as **Manipur University**). It integrates a modern Next.js client-server dashboard with a high-performance Python FastAPI machine learning microservice to deliver real-time attendance forecasting, collaborative personalized event suggestions, and participant feedback sentiment intelligence.
 
 ---
 
-## 🚀 Key Architectural Layout
+## 🗺️ High-Level System Architecture
 
-The platform uses a split-architecture design:
-1. **Frontend & DB Gateway**: Next.js (App Router), Tailwind CSS, PostgreSQL, and Prisma ORM.
-2. **AI Microservice**: FastAPI, Scikit-learn, Pandas, NumPy, and Uvicorn running on Port 8050 (to prevent early-warning system collisions on Port 8000).
+The platform uses a split-architecture design that isolates user-facing client processes from the data-modeling backend. This separation ensures that computationally intensive machine learning tasks (like model retraining and vector calculations) do not block or lag the responsive, low-latency UI.
 
 ```mermaid
-graph LR
-    subgraph Client-Server Architecture
-        NextClient[Next.js Client Page] <-->|Server Actions / Fetch| NextServer[Next.js API Handler]
-        NextServer <-->|Prisma Client| Postgres[(PostgreSQL DB)]
+flowchart TD
+    subgraph Client-Server Core (Next.js & PostgreSQL)
+        UI[React Client Form] <-->|Server Actions / Debounced State| NextAPI[Next.js Server Router]
+        NextAPI <-->|Prisma ORM| Postgres[(PostgreSQL Database)]
     end
 
-    subgraph AI Intelligence Layer
-        NextServer <-->|REST Requests on Port 8050| FastAPI[FastAPI Microservice]
-        FastAPI <-->|Gradient Boosting Weights| PickledModel[attendance_model.pkl]
+    subgraph Analytical Intelligence Layer (FastAPI Microservice)
+        FastAPI[FastAPI App on Port 8050]
+        Predictor[Gradient Boosting Turnout Model]
+        Recommender[Cosine Collaborative Recommender]
+        Sentiment[Lexicon-Based Sentiment Parser]
+        
+        FastAPI --> Predictor
+        FastAPI --> Recommender
+        FastAPI --> Sentiment
     end
+
+    subgraph Error Handling Gateway
+        Fallback[Local JS Rule-Based Fallback Engine]
+    end
+
+    NextAPI <-->|REST Integration over Port 8050| FastAPI
+    NextAPI -.->|If Microservice Unreachable| Fallback
 ```
+
+### 🔒 Network Isolation & Port Security
+* **Next.js Client & Backend**: Runs on Port **3000** (falling back dynamically to Port **3001**).
+* **FastAPI ML Microservice**: Runs on Port **8050**. By dedicating Port 8050 to the AI service, we completely avoid port collisions with other FastAPI applications running in the workspace (such as early-warning flood detectors which default to Port 8000).
+* **CORS Access Rules**: The Python service blocks requests originating from outside the Next.js frontend origin, protecting inference weights from arbitrary internet access.
 
 ---
 
@@ -41,7 +57,7 @@ graph LR
 
 ### 🧠 Python AI Microservice
 * **Core Engine**: **FastAPI**
-* **Machine Learning**: **Scikit-learn**, **NumPy**, **Pandas**
+* **Machine Learning**: **Scikit-learn**, **NumPy**, **Pandas**, **Seaborn**, **Matplotlib**
 * **Runtime / Deployment**: **uv** (virtualenv manager), **Uvicorn**, **Docker**
 
 ---
@@ -57,6 +73,7 @@ Event-Management/
 │   │   └── sentiment_analyzer.py
 │   ├── main.py                   # FastAPI entrypoint
 │   ├── train_now.py              # ML retraining execution script
+│   ├── plot_metrics.py           # Seaborn training metrics plotting tool
 │   └── README.md                 # Detailed AI documentation
 ├── prisma/                       # Database schema & seeding configurations
 │   ├── schema.prisma             # PostgreSQL relationships definitions
@@ -75,6 +92,7 @@ Event-Management/
 │   │   ├── ui/                   # Reusable atomic UI buttons & layouts
 │   │   └── dashboard/            # Dynamic organizer review panels & lists
 │   └── middleware.ts             # Route guard middleware
+├── THESIS_DESIGN.md              # Academic-grade systems design paper
 ├── .env                          # Local database & auth environment configurations
 ├── next.config.ts                # Next.js configuration rules
 └── package.json                  # Frontend library dependencies manifest
@@ -82,7 +100,7 @@ Event-Management/
 
 ---
 
-## 🗄️ Database Architecture & Prisma Schema
+## 🗄 ... Relational Database & Entity Relationship Modeling
 
 The platform implements five interconnected relational tables designed for quick queries and strong integrity constraints:
 
@@ -113,7 +131,7 @@ erDiagram
         string location
         Category category "CONFERENCE | WORKSHOP | CONCERT | WEBINAR..."
         int capacity
-        float price
+        float price "INR - ₹"
         EventStatus status "UPCOMING | ONGOING | COMPLETED"
         string organizerId FK
     }
@@ -138,30 +156,50 @@ erDiagram
 
 ---
 
-## 🌟 Smart AI Features
+## 🌟 High-Fidelity Feature Details
 
-### 1. Real-time Attendance Prediction
-* **Flow**: When an organizer changes event configurations (pricing, category, venue capacity, format) on the creation dashboard, an asynchronous, debounced request is sent to the FastAPI `/predict-attendance` endpoint.
-* **Algorithm**: **Gradient Boosting Regressor** trained on typical student budget profiles in **Indian Rupees (INR - ₹)**:
-  - Ticket prices under **₹200** register as highly positive student turnout enhancers.
-  - Ticket prices above **₹500** apply steep attendance rate penalties.
-* **Fallback**: The Next.js API route includes a local, rule-based mathematical simulator that mirrors the model in case the microservice is offline, maintaining a continuous user experience.
+### 1. Zero-Overbooking Checkout Pipeline
+During ticket booking, the transactional pipeline checks target capacity constraints in real-time, preventing overbooking:
+$$\text{Tickets Issued} = \text{count}(\text{Tickets WHERE } \text{eventId} = E \text{ AND } \text{status} = \text{CONFIRMED})$$
+If $\text{Tickets Issued} \ge \text{Capacity}$, registration is safely blocked. A unique **CUID** ticket is generated upon booking completion (e.g., `ticket_cuid12345`) to map checking logs.
 
-### 2. Tailored Collaborative Event Recommendations
-* Cosine similarity computations identify correlations between attendee interest categories (e.g. *Tech Workshop*, *Sangai Music Festival*) and their historical registration profiles to build user recommendations.
+### 2. Dynamic Agenda Coordinator
+Supports multi-track scheduling without child table bloat by serializing dynamic agenda schedules into a single `JSON` string inside the PostgreSQL database (containing sub-event titles, durations, and speakers). The frontend parses this array and renders it dynamically.
 
-### 3. Automated Review Sentiment Categorization
-* When a user posts an event review, the text is evaluated by a rule engine (negation tracking and intensifiers) inside `sentiment_analyzer.py`, identifying if the review is `POSITIVE`, `NEGATIVE`, or `NEUTRAL` before saving it into the PostgreSQL database.
+### 3. Asynchronous Debounced Predictor UI
+A React hook implements a **600ms debounce** while organizers create events. This captures pricing, category, format, and capacity configurations, presenting expected turnout rates via a modern glassmorphic interface with vibrant progress bars and factor badges.
+
+---
+
+## 🧠 Machine Learning Engine Architecture
+
+### 1. Attendance Predictor (Gradient Boosting Regression)
+* **Mathematical Theory**: Sequentially fits decision trees ($M=100$) to minimize Mean Squared Error (MSE) loss on pseudo-residuals:
+  $$r_{im} = y_i - F_{m-1}(X_i)$$
+* **Student Price Elasticity (INR - ₹)**:
+  - **₹0 (Free)**: `1.25x` turnout multiplier.
+  - **₹1 - ₹199 (Cheap)**: `1.10x` turnout multiplier.
+  - **₹200 - ₹500 (Moderate)**: `0.98x` turnout multiplier.
+  - **> ₹500 (Premium)**: `0.75x` turnout multiplier (friction threshold).
+* **Calendar & Format Constraints**: Weekdays are favored (`1.0x` vs `0.88x` weekends), and online format removes commuting friction (`1.05x` turnout boost).
+* **Metrics**: $R^2 = 0.91$, MAE $= 0.035$, RMSE $= 0.045$.
+
+### 2. Personalized Event Recommendations
+* **Mechanism**: Maps a user interest preference profile vector $\vec{u}$ against current active event category vectors $\vec{e}$ using Cosine Similarity, plus random noise variables $\epsilon \sim \mathcal{U}(-0.05, 0.05)$ to prevent recommendations fatigue.
+* **Cold Start**: New profiles are initialized with neutral vectors $\vec{u}_{new} = [0.5, 0.5, 0.5, 0.5]$ to rank events fairly until registrations accumulate.
+
+### 3. Feedback Sentiment NLU Engine
+* Parses review comments dynamically. Identifies emotional keywords, tracks grammatical negation inversion rules (e.g. *"not bad"* increases positive ratings), and applies intensifiers (e.g. *"very excellent"* multiplies score by `1.5x`). Outputs POSITIVE, NEGATIVE, or NEUTRAL classes and stores them in PostgreSQL.
 
 ---
 
 ## 🚀 Local Quickstart Guide
 
-Ensure you have **Node.js 18+**, **Python 3.10+**, **uv**, and a **PostgreSQL** instance ready.
+Ensure you have **Node.js 18+**, **Python 3.10+**, **uv**, and **PostgreSQL** running.
 
 ### Part 1: Setting Up the Next.js Client & Backend
 
-1. **Navigate and Install Node Dependencies**:
+1. **Install Node Dependencies**:
    ```bash
    npm install
    ```
@@ -188,7 +226,6 @@ Ensure you have **Node.js 18+**, **Python 3.10+**, **uv**, and a **PostgreSQL** 
    ```bash
    npm run dev
    ```
-   *Next.js will load at: `http://localhost:3000` (or `http://localhost:3001` if port 3000 is occupied).*
 
 ---
 
@@ -203,11 +240,17 @@ Ensure you have **Node.js 18+**, **Python 3.10+**, **uv**, and a **PostgreSQL** 
 2. **Run Model Training**:
    Before starting the server, run the training pipeline to generate the serialized Scikit-learn model:
    ```bash
-   # Automatically syncs dataset and compiles attendance_model.pkl
+   # Syncs dataset and compiles attendance_model.pkl
    ./.venv/bin/python train_now.py
    ```
 
-3. **Start the Uvicorn Server** (running on port **8050**):
+3. **Plot Analytical Metrics**:
+   To generate training convergence and feature importance charts with Seaborn, run:
+   ```bash
+   ./.venv/bin/python plot_metrics.py
+   ```
+
+4. **Start the Uvicorn Server** (running on port **8050**):
    ```bash
    uv run uvicorn main:app --reload --port 8050
    ```
@@ -217,14 +260,11 @@ Ensure you have **Node.js 18+**, **Python 3.10+**, **uv**, and a **PostgreSQL** 
 
 ## 🔮 Core System Enhancements Roadmap
 
-### 1. Nightly Feedback & Weight Drifts (Online Learning)
-* **Goal**: Retrain the turnout predictor model automatically based on real-world events.
-* **Mechanism**: Deploy a nightly node-cron or GitHub Action that counts actual registrations (`status = CONFIRMED`) in PostgreSQL and sends them as coordinates to the Python `/train` endpoint to update the `.pkl` file.
+### 1. Closed-Loop Online Learning Feedback
+* COUNT verified active tickets (`status = CONFIRMED`) in PostgreSQL nightly using a cron job, sending training updates back to the Python microservice `/train` endpoint to dynamically recalibrate model weights.
 
-### 2. Fine-Tuning deep NLP models
-* **Goal**: Transition feedback reviews parsing from keywords matching to state-of-the-art NLP models.
-* **Mechanism**: Download and deploy a quantized, local Hugging Face transformer model (e.g. `distilbert-base-uncased-finetuned-sst-2-english`) within the FastAPI environment.
+### 2. Deep Learning NLP
+* Replace rule-based lexicon parsing with a pre-trained, fine-tuned transformer model (`distilbert-base-uncased-finetuned-sst-2-english`) running locally inside the FastAPI container.
 
-### 3. Multi-role Organiser Workflow approvals
-* **Goal**: Enhance platform governance.
-* **Mechanism**: Admin dashboards that monitor organization requests, evaluate student turnout predictions, and toggle organizers' `isApproved` flags dynamically using PostgreSQL/Prisma updates.
+### 3. Multi-role Organiser Validation
+* Administrative consoles to audit predicted turnout rates against physical capacities before giving structural validation approvals.
