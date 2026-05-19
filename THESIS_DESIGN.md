@@ -35,12 +35,12 @@ Evently adopts a decoupled, split-architecture paradigm that separates high-conc
 ```mermaid
 flowchart TB
     %% Definitions
-    subgraph Frontend-Backend Client-Server Gateway (Port 3000/3001)
+    subgraph gateway ["Frontend-Backend Client-Server Gateway (Port 3000/3001)"]
         NextUI[React 19 Client UI] <-->|Debounced State Updates| NextServer[Next.js Server API Routes]
         NextServer <-->|Prisma ORM Database Queries| PG[(PostgreSQL Database)]
     end
 
-    subgraph FastAPI AI Microservice (Port 8050)
+    subgraph microservice ["FastAPI AI Microservice (Port 8050)"]
         FastAPI[FastAPI Router Engine]
         GB_Predictor[Gradient Boosting Turnout Predictor]
         CF_Recommender[Cosine Collaborative Recommender]
@@ -53,7 +53,7 @@ flowchart TB
         GB_Predictor -->|Reads Pickled Weights| PickledWeights[attendance_model.pkl]
     end
 
-    subgraph Operational Fallback Layer
+    subgraph fallback_layer ["Operational Fallback Layer"]
         JS_Fallback[Rule-Based Fallback Engine]
     end
 

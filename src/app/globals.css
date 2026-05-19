@@ -195,6 +195,9 @@ body {
   border-color: var(--accent-primary);
   box-shadow: var(--shadow-float);
 }
+.event-card:hover .event-card-img {
+  transform: scale(1.06);
+}
 .event-card::before {
   content: "";
   position: absolute;

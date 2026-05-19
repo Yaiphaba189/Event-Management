@@ -205,11 +205,12 @@ export default async function EventsPage({ searchParams }: PageProps) {
                   animationFillMode: "forwards",
                 }}
               >
-                {/* Image Placeholder */}
+                {/* Image Placeholder or Event Image */}
                 <div
                   style={{
                     position: "relative",
                     height: "200px",
+                    overflow: "hidden",
                     background: `linear-gradient(135deg, rgba(99, 102, 241, ${
                       0.15 + (i % 3) * 0.1
                     }), rgba(168, 85, 247, ${0.1 + (i % 3) * 0.08}))`,
@@ -218,12 +219,30 @@ export default async function EventsPage({ searchParams }: PageProps) {
                     justifyContent: "center",
                   }}
                 >
-                  <span style={{ opacity: 0.6, color: "var(--text-accent)" }}>
-                    {(() => {
-                      const IconComp = categoryIcons[event.category] || Calendar;
-                      return <IconComp size={56} />;
-                    })()}
-                  </span>
+                  {event.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.5s ease",
+                      }}
+                      className="event-card-img"
+                    />
+                  ) : (
+                    <span style={{ opacity: 0.6, color: "var(--text-accent)" }}>
+                      {(() => {
+                        const IconComp = categoryIcons[event.category] || Calendar;
+                        return <IconComp size={56} />;
+                      })()}
+                    </span>
+                  )}
                   {event.isFeatured && (
                     <span
                       className="badge badge-warning"
@@ -234,6 +253,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "0.25rem",
+                        zIndex: 2,
                       }}
                     >
                       <Star size={10} style={{ fill: "currentColor" }} /> Featured
@@ -246,6 +266,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
                         position: "absolute",
                         top: "1rem",
                         right: "1rem",
+                        zIndex: 2,
                       }}
                     >
                       Free

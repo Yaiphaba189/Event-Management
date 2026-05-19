@@ -10,12 +10,12 @@ The platform uses a split-architecture design that isolates user-facing client p
 
 ```mermaid
 flowchart TD
-    subgraph Client-Server Core (Next.js & PostgreSQL)
+    subgraph core ["Client-Server Core (Next.js & PostgreSQL)"]
         UI[React Client Form] <-->|Server Actions / Debounced State| NextAPI[Next.js Server Router]
         NextAPI <-->|Prisma ORM| Postgres[(PostgreSQL Database)]
     end
 
-    subgraph Analytical Intelligence Layer (FastAPI Microservice)
+    subgraph analytics ["Analytical Intelligence Layer (FastAPI Microservice)"]
         FastAPI[FastAPI App on Port 8050]
         Predictor[Gradient Boosting Turnout Model]
         Recommender[Cosine Collaborative Recommender]
@@ -26,7 +26,7 @@ flowchart TD
         FastAPI --> Sentiment
     end
 
-    subgraph Error Handling Gateway
+    subgraph fallback_gateway ["Error Handling Gateway"]
         Fallback[Local JS Rule-Based Fallback Engine]
     end
 
