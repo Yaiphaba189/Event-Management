@@ -60,6 +60,7 @@ class SentimentRequest(BaseModel):
 
 
 class TrainRequest(BaseModel):
+    model_config = {"protected_namespaces": ()}
     model_type: str  # "recommendation", "attendance", "sentiment"
     data_path: Optional[str] = None
 

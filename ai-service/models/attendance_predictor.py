@@ -71,7 +71,7 @@ class AttendancePredictor:
             n_samples = 1000 # Increased for better training
 
             categories = np.random.choice(list(CATEGORY_ENCODING.keys()), n_samples)
-            prices = np.random.uniform(0, 300, n_samples)
+            prices = np.random.uniform(0, 1500, n_samples)
             capacities = np.random.choice([50, 100, 200, 500, 1000, 2000], n_samples)
             days = np.random.randint(0, 7, n_samples)
             is_online = np.random.choice([0, 1], n_samples)
@@ -85,13 +85,15 @@ class AttendancePredictor:
             for i in range(n_samples):
                 cat_weight = CATEGORY_WEIGHTS.get(categories[i], 0.6)
                 
-                # Manipur University context: Students love free events or low price
+                # Manipur University context: Students love free events or low price (INR)
                 if prices[i] == 0:
-                    price_effect = 1.2
-                elif prices[i] < 50:
-                    price_effect = 1.05
+                    price_effect = 1.25
+                elif prices[i] < 200:
+                    price_effect = 1.10
+                elif prices[i] < 500:
+                    price_effect = 0.98
                 else:
-                    price_effect = 0.8
+                    price_effect = 0.75
                     
                 day_effect = 1.0 if days[i] < 5 else 0.9  # Weekdays slightly better for campus events
                 online_effect = 1.05 if is_online[i] else 1.0
@@ -193,8 +195,8 @@ class AttendancePredictor:
             },
             {
                 "name": "Price Point",
-                "value": f"${price}",
-                "impact": "positive" if price < 50 else "negative",
+                "value": f"₹{price}",
+                "impact": "positive" if price < 200 else "neutral" if price < 500 else "negative",
                 "weight": self.feature_importances["price"] if self.feature_importances else 0.25,
             },
             {
@@ -220,16 +222,16 @@ class AttendancePredictor:
         }
 
     def _fallback_predict(self, category: str, price: float, day_of_week: int, is_online: bool) -> float:
-        """Fallback rule-based prediction."""
+        """Fallback rule-based prediction with INR currency rules."""
         cat_weight = CATEGORY_WEIGHTS.get(category, 0.6)
         if price == 0:
-            price_effect = 1.15
-        elif price < 50:
-            price_effect = 1.05
-        elif price < 150:
-            price_effect = 0.95
+            price_effect = 1.20
+        elif price < 200:
+            price_effect = 1.10
+        elif price < 500:
+            price_effect = 0.98
         else:
-            price_effect = 0.80
+            price_effect = 0.75
 
         if day_of_week < 5:
             day_effect = 1.0

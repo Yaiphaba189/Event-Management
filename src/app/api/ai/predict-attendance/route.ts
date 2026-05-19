@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     // 2. Intelligent Fallback Model
     const baseRate = isOnline ? 0.85 : 0.70; // Online events have lower barrier, higher capacity fill
-    const priceModifier = price === 0 ? 1.25 : price > 50 ? 0.75 : 0.95; // Free events get massive boosts
+    const priceModifier = price === 0 ? 1.25 : price < 200 ? 1.10 : price > 500 ? 0.75 : 0.95; // INR thresholds (Free, Cheap under ₹200, Expensive over ₹500)
     const categoryModifier: Record<string, number> = {
       CONFERENCE: 1.05,
       WORKSHOP: 1.15,
@@ -45,12 +45,12 @@ export async function POST(request: Request) {
       NETWORKING: 0.9,
       OTHER: 1.0,
     };
-
+ 
     const catMod = categoryModifier[category] || 1.0;
     const predictedRate = Math.min(baseRate * priceModifier * catMod, 0.99);
     const expectedAttendance = Math.round(capacity * predictedRate);
     const confidence = Math.round(75 + Math.random() * 20);
-
+ 
     return NextResponse.json({
       eventId,
       prediction: {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         confidence,
         factors: [
           { name: "Event Category", impact: catMod > 1 ? "positive" : "neutral", weight: 0.3 },
-          { name: "Price Point", impact: priceModifier > 1 ? "positive" : "negative", weight: 0.25 },
+          { name: "Price Point", impact: priceModifier > 1.05 ? "positive" : priceModifier < 0.9 ? "negative" : "neutral", weight: 0.25 },
           { name: "Event Format", impact: isOnline ? "positive" : "neutral", weight: 0.2 },
           { name: "Historical Campus Data", impact: "positive", weight: 0.25 },
         ],
