@@ -1,65 +1,421 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getSessionUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
+import {
+  Brain,
+  TrendingUp,
+  Ticket,
+  MessageSquare,
+  Activity,
+  Lock,
+  Mic,
+  Laptop,
+  Video,
+  Music,
+  Trophy,
+  Users,
+  Sparkles,
+} from "lucide-react";
 
-export default function Home() {
+const features = [
+  {
+    icon: Brain,
+    title: "Smart Recommendations",
+    desc: "AI analyzes your preferences to suggest events you'll love.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Attendance Prediction",
+    desc: "ML models predict turnout so you can plan capacity perfectly.",
+  },
+  {
+    icon: Ticket,
+    title: "Automated Ticketing",
+    desc: "Seamless registration and instant digital ticket generation.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Sentiment Analysis",
+    desc: "NLP-powered feedback analysis to improve future events.",
+  },
+  {
+    icon: Activity,
+    title: "Real-time Analytics",
+    desc: "Live dashboard with attendance metrics and engagement stats.",
+  },
+  {
+    icon: Lock,
+    title: "Secure Auth",
+    desc: "Enterprise-grade authentication with NextAuth.js integration.",
+  },
+];
+
+const stats = [
+  { value: "10K+", label: "Events Created" },
+  { value: "50K+", label: "Tickets Booked" },
+  { value: "95%", label: "Prediction Accuracy" },
+  { value: "4.9★", label: "User Rating" },
+];
+
+// Hardcoded stats remain static
+
+export default async function Home() {
+  const user = await getSessionUser();
+
+  // Fetch real counts for categories using highly optimized native groupBy aggregation
+  const categoryCounts = await prisma.event.groupBy({
+    by: ['category'],
+    _count: {
+      _all: true,
+    },
+  });
+
+  const countsMap = categoryCounts.reduce((acc, curr) => {
+    acc[curr.category] = curr._count._all;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const categories = [
+    { name: "Conferences", dbName: "CONFERENCE", icon: Mic },
+    { name: "Workshops", dbName: "WORKSHOP", icon: Laptop },
+    { name: "Webinars", dbName: "WEBINAR", icon: Video },
+    { name: "Concerts", dbName: "CONCERT", icon: Music },
+    { name: "Sports", dbName: "SPORTS", icon: Trophy },
+    { name: "Networking", dbName: "NETWORKING", icon: Users },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {/* ─── Hero Section ─────────────────────────────────────── */}
+      <section
+        style={{
+          position: "relative",
+          minHeight: "90vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          overflow: "hidden",
+          padding: "2rem 1.5rem",
+        }}
+      >
+        {/* Decorative Orbs */}
+        <div
+          className="glow-orb glow-orb-primary animate-float"
+          style={{
+            width: "500px",
+            height: "500px",
+            top: "-150px",
+            right: "-100px",
+          }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+        <div
+          className="glow-orb glow-orb-secondary animate-float"
+          style={{
+            width: "400px",
+            height: "400px",
+            bottom: "-100px",
+            left: "-80px",
+            animationDelay: "2s",
+          }}
+        />
+        <div
+          className="glow-orb glow-orb-pink animate-float"
+          style={{
+            width: "300px",
+            height: "300px",
+            top: "40%",
+            left: "60%",
+            animationDelay: "4s",
+          }}
+        />
+
+        <div
+          style={{ position: "relative", zIndex: 1, maxWidth: "800px" }}
+          className="animate-fade-in-up"
+        >
+          <div
+            className="badge badge-primary"
+            style={{ marginBottom: "1.5rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+          >
+            <Sparkles size={12} /> Powered by Artificial Intelligence
+          </div>
+          <h1
+            style={{
+              fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+              fontWeight: 900,
+              lineHeight: 1.1,
+              letterSpacing: "-0.03em",
+              marginBottom: "1.5rem",
+            }}
+          >
+            The Future of{" "}
+            <span className="gradient-text">Event Management</span> is Here
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <p
+            style={{
+              fontSize: "1.2rem",
+              color: "var(--text-secondary)",
+              maxWidth: "600px",
+              margin: "0 auto 2.5rem",
+              lineHeight: 1.7,
+            }}
+          >
+            Create, discover, and manage events with AI-powered
+            recommendations, predictive analytics, and smart automation.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Link href="/events" className="btn-primary">
+              Explore Events →
+            </Link>
+            {!user && (
+              <Link href="/dashboard" className="btn-secondary">
+                Organize an Event
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Stats Section ─────────────────────────────────────── */}
+      <section
+        style={{
+          padding: "2rem 1.5rem",
+          maxWidth: "1000px",
+          margin: "0 auto",
+        }}
+      >
+        <div
+          className="glass animate-fade-in-up"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "1px",
+            background: "var(--border-color)",
+            borderRadius: "var(--radius-xl)",
+            overflow: "hidden",
+          }}
+        >
+          {stats.map((stat, i) => (
+            <div
+              key={i}
+              className="stat-card"
+              style={{ background: "var(--bg-card)" }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              <div className="stat-value">{stat.value}</div>
+              <div className="stat-label">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Features Section ──────────────────────────────────── */}
+      <section className="section" id="features">
+        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+          <div
+            className="badge badge-primary"
+            style={{ marginBottom: "1rem" }}
+          >
+            Features
+          </div>
+          <h2 className="section-title">
+            Intelligent Tools for{" "}
+            <span className="gradient-text">Modern Events</span>
+          </h2>
+          <p
+            className="section-subtitle"
+            style={{ margin: "0.75rem auto 0" }}
+          >
+            Every feature is designed to save time, boost engagement, and deliver
+            data-driven insights.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+            gap: "1.5rem",
+          }}
+        >
+          {features.map((feature, i) => (
+            <div
+              key={i}
+              className="glass glass-hover animate-fade-in-up"
+              style={{
+                padding: "2rem",
+                animationDelay: `${i * 100}ms`,
+                opacity: 0,
+                animationFillMode: "forwards",
+              }}
+            >
+              <div
+                style={{
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "var(--radius-md)",
+                  background: "rgba(99, 102, 241, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "1.25rem",
+                }}
+              >
+                <feature.icon size={24} style={{ color: "var(--accent-primary)" }} />
+              </div>
+              <h3
+                style={{
+                  fontSize: "1.15rem",
+                  fontWeight: 700,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {feature.title}
+              </h3>
+              <p
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: "0.9rem",
+                  lineHeight: 1.7,
+                }}
+              >
+                {feature.desc}
+              </p>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* ─── Categories Section ────────────────────────────────── */}
+      <section className="section">
+        <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+          <div
+            className="badge badge-primary"
+            style={{ marginBottom: "1rem" }}
+          >
+            Categories
+          </div>
+          <h2 className="section-title">
+            Browse by <span className="gradient-text">Category</span>
+          </h2>
+          <p
+            className="section-subtitle"
+            style={{ margin: "0.75rem auto 0" }}
+          >
+            Find the perfect event type that matches your interests.
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+            gap: "1rem",
+          }}
+        >
+          {categories.map((cat, i) => {
+            const count = countsMap[cat.dbName] || 0;
+            return (
+              <Link
+                href={`/events?category=${cat.dbName}`}
+                key={i}
+                className="glass glass-hover"
+                style={{
+                  padding: "1.75rem 1.25rem",
+                  textAlign: "center",
+                  textDecoration: "none",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+                  <cat.icon size={32} style={{ color: "var(--accent-primary)" }} />
+                </div>
+                <h3
+                  style={{
+                    fontSize: "1rem",
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                    marginBottom: "0.25rem",
+                  }}
+                >
+                  {cat.name}
+                </h3>
+                <p
+                  style={{
+                    color: "var(--text-muted)",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {count} {count === 1 ? "event" : "events"}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ─── CTA Section ──────────────────────────────────────── */}
+      <section
+        style={{
+          position: "relative",
+          padding: "6rem 1.5rem",
+          textAlign: "center",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          className="glow-orb glow-orb-primary"
+          style={{
+            width: "600px",
+            height: "600px",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <h2
+            style={{
+              fontSize: "clamp(2rem, 4vw, 3rem)",
+              fontWeight: 900,
+              lineHeight: 1.2,
+              marginBottom: "1rem",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Ready to Transform Your{" "}
+            <span className="gradient-text">Events?</span>
+          </h2>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "1.1rem",
+              maxWidth: "500px",
+              margin: "0 auto 2.5rem",
+            }}
+          >
+            Join thousands of organizers who use AI to create unforgettable
+            experiences.
+          </p>
+          <Link
+            href="/auth/signup"
+            className="btn-primary animate-pulse-glow"
+            style={{
+              padding: "1rem 2.5rem",
+              fontSize: "1rem",
+            }}
+          >
+            Get Started for Free
+          </Link>
+        </div>
+      </section>
+    </>
   );
 }
