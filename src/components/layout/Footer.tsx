@@ -6,7 +6,7 @@ const footerLinks = {
     { label: "Events", href: "/events" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Pricing", href: "#" },
-    { label: "AI Features", href: "#" },
+    { label: "Features", href: "#features" },
   ],
   Company: [
     { label: "About", href: "#" },
@@ -71,7 +71,7 @@ export default function Footer() {
                 color: "var(--text-primary)",
               }}
             >
-              Event<span className="gradient-text">AI</span>
+              Event<span className="gradient-text">ly</span>
             </span>
           </div>
           <p
@@ -82,7 +82,7 @@ export default function Footer() {
               maxWidth: "280px",
             }}
           >
-            AI-powered event management platform that transforms how you plan,
+            A modern event management platform that transforms how you plan,
             organize, and experience events.
           </p>
         </div>
@@ -138,7 +138,7 @@ export default function Footer() {
         }}
       >
         <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-          © {new Date().getFullYear()} EventAI. All rights reserved.
+          © {new Date().getFullYear()} Evently. All rights reserved.
         </p>
         <div style={{ display: "flex", gap: "1.5rem" }}>
           {["Twitter", "GitHub", "LinkedIn"].map((social) => (

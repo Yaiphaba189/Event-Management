@@ -31,6 +31,7 @@ model User {
   organizedEvents Event[]    @relation("Organizer")
   tickets         Ticket[]
   feedbacks       Feedback[]
+  payments        Payment[]
 }
 
 model Account {
@@ -93,18 +94,40 @@ model Event {
 
   tickets   Ticket[]
   feedbacks Feedback[]
+  payments  Payment[]
 }
 
 model Ticket {
   id        String       @id @default(cuid())
   ticketNo  String       @unique @default(cuid())
-  status    TicketStatus @default(CONFIRMED)
+  status    TicketStatus @default(PENDING)
+  attended  Boolean      @default(false)
   createdAt DateTime     @default(now())
 
   userId  String
-  user    User   @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
   eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event    @relation(fields: [eventId], references: [id])
+  payment Payment?
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  amount            Float
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique
+  razorpaySignature String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  eventId  String
+  event    Event  @relation(fields: [eventId], references: [id])
+  ticketId String @unique
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
 
 model Feedback {
@@ -148,7 +171,15 @@ enum EventStatus {
 }
 
 enum TicketStatus {
+  PENDING
   CONFIRMED
   CANCELLED
   USED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

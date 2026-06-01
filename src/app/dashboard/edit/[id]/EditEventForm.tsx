@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Brain, Save } from "lucide-react";
+import { Save, Calendar } from "lucide-react";
 
 const categories = [
   "CONFERENCE",
@@ -482,29 +482,31 @@ export default function EditEventForm({ event }: EditEventFormProps) {
             </button>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {subEventsList.map((item, index) => (
               <div
                 key={index}
+                className="glass-hover"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr 1fr auto",
-                  gap: "0.75rem",
+                  gap: "1rem",
                   alignItems: "end",
-                  background: "rgba(255, 255, 255, 0.02)",
-                  padding: "1rem",
+                  background: "rgba(255, 255, 255, 0.01)",
+                  padding: "1.25rem",
                   borderRadius: "var(--radius-md)",
                   border: "1px solid var(--border-color)",
+                  transition: "all 0.2s ease",
                 }}
               >
                 <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.3rem" }}>
-                    Sub-Event Title *
+                  <label style={{ display: "block", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "0.4rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.02em" }}>
+                    Sub-Event Title
                   </label>
                   <input
                     type="text"
                     className="input"
-                    style={{ padding: "0.4rem 0.6rem", fontSize: "0.85rem" }}
+                    style={{ padding: "0.6rem 0.75rem", fontSize: "0.9rem" }}
                     placeholder="e.g., Opening Remarks"
                     value={item.title}
                     onChange={(e) => handleSubEventChange(index, "title", e.target.value)}
@@ -512,13 +514,13 @@ export default function EditEventForm({ event }: EditEventFormProps) {
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.3rem" }}>
-                    Time Slot / Duration *
+                  <label style={{ display: "block", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "0.4rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.02em" }}>
+                    Time Slot
                   </label>
                   <input
                     type="text"
                     className="input"
-                    style={{ padding: "0.4rem 0.6rem", fontSize: "0.85rem" }}
+                    style={{ padding: "0.6rem 0.75rem", fontSize: "0.9rem" }}
                     placeholder="e.g., 09:00 AM - 09:30 AM"
                     value={item.time}
                     onChange={(e) => handleSubEventChange(index, "time", e.target.value)}
@@ -526,13 +528,13 @@ export default function EditEventForm({ event }: EditEventFormProps) {
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.3rem" }}>
-                    Speaker / Host / Venue
+                  <label style={{ display: "block", fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "0.4rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.02em" }}>
+                    Speaker/Host
                   </label>
                   <input
                     type="text"
                     className="input"
-                    style={{ padding: "0.4rem 0.6rem", fontSize: "0.85rem" }}
+                    style={{ padding: "0.6rem 0.75rem", fontSize: "0.9rem" }}
                     placeholder="e.g., Prof. Robert J."
                     value={item.speaker}
                     onChange={(e) => handleSubEventChange(index, "speaker", e.target.value)}
@@ -541,47 +543,31 @@ export default function EditEventForm({ event }: EditEventFormProps) {
                 <button
                   type="button"
                   onClick={() => handleRemoveSubEvent(index)}
+                  className="btn-danger-outline"
                   style={{
-                    background: "rgba(248, 113, 113, 0.1)",
-                    border: "1px solid rgba(248, 113, 113, 0.2)",
-                    color: "#f87171",
-                    borderRadius: "6px",
-                    padding: "0.4rem 0.75rem",
-                    cursor: "pointer",
-                    fontSize: "0.85rem",
+                    padding: "0.6rem 0.8rem",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "42px",
                   }}
+                  title="Remove segment"
                 >
-                  Delete
+                  <span style={{ fontSize: "1.2rem", lineHeight: 1 }}>&times;</span>
                 </button>
               </div>
             ))}
 
             {subEventsList.length === 0 && (
-              <div style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)", fontSize: "0.85rem", border: "1px dashed var(--border-color)", borderRadius: "var(--radius-md)" }}>
-                No sub-events added. Your event will run as a single main program.
+              <div style={{ textAlign: "center", padding: "2.5rem", color: "var(--text-muted)", fontSize: "0.9rem", border: "1px dashed var(--border-color)", borderRadius: "var(--radius-md)", background: "rgba(255,255,255,0.01)" }}>
+                <Calendar size={24} style={{ marginBottom: "0.5rem", opacity: 0.3 }} />
+                <p>No sub-events added. Your event will run as a single program.</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* AI Prediction Preview */}
-        <div
-          style={{
-            padding: "1.25rem",
-            background: "rgba(99, 102, 241, 0.06)",
-            borderRadius: "var(--radius-md)",
-            border: "1px solid rgba(99, 102, 241, 0.1)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-            <Brain size={16} style={{ color: "var(--accent-primary)" }} />
-            <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>AI Forecasting</span>
-          </div>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", lineHeight: 1.6 }}>
-            Capacity updated to <strong style={{ color: "var(--text-accent)" }}>{formData.capacity}</strong> spots.
-            Our predictive attendance models recommend updating social media postings once changes are saved.
-          </p>
-        </div>
+
 
         {/* Submit */}
         <div style={{ display: "flex", gap: "1rem", paddingTop: "0.5rem" }}>

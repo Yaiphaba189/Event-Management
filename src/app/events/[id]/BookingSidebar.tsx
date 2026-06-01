@@ -37,26 +37,32 @@ export default function BookingSidebar({
     setBookingStatus(null);
 
     try {
-      const res = await fetch("/api/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
-      });
+      if (price === 0) {
+        // Free Event Registration Flow - book immediately
+        const res = await fetch("/api/tickets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId }),
+        });
 
-      const data = await res.json();
-      if (res.ok) {
-        setBookingStatus({
-          success: true,
-          message: "Ticket successfully booked! See you at the event.",
-          ticketNo: data.ticket.ticketNo,
-        });
-        setTicketsSold((prev) => prev + 1);
-        router.refresh();
+        const data = await res.json();
+        if (res.ok) {
+          setBookingStatus({
+            success: true,
+            message: "Ticket successfully booked! See you at the event.",
+            ticketNo: data.ticket.ticketNo,
+          });
+          setTicketsSold((prev) => prev + 1);
+          router.refresh();
+        } else {
+          setBookingStatus({
+            success: false,
+            message: data.error || "Failed to book ticket.",
+          });
+        }
       } else {
-        setBookingStatus({
-          success: false,
-          message: data.error || "Failed to book ticket.",
-        });
+        // Paid Event Flow - Redirect to dedicated payment checkout page
+        router.push(`/events/${eventId}/payment`);
       }
     } catch {
       setBookingStatus({
@@ -218,12 +224,12 @@ export default function BookingSidebar({
           }}
         >
           {isLoading ? (
-            "Registering..."
+            price > 0 ? "Routing to payment..." : "Registering..."
           ) : isSoldOut ? (
             "Sold Out"
           ) : (
             <>
-              <Ticket size={18} /> Register Now
+              <Ticket size={18} /> {price > 0 ? "Buy Ticket & Register" : "Register Now"}
             </>
           )}
         </button>

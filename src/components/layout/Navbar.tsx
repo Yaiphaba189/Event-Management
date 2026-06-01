@@ -87,7 +87,7 @@ export default function Navbar({ user }: { user: any }) {
               letterSpacing: "-0.02em",
             }}
           >
-            Event<span className="gradient-text">AI</span>
+            Event<span className="gradient-text">ly</span>
           </span>
         </Link>
 

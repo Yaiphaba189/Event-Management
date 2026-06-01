@@ -2,10 +2,9 @@ import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import {
-  Brain,
-  TrendingUp,
+  Filter,
+  Heart,
   Ticket,
-  MessageSquare,
   Activity,
   Lock,
   Mic,
@@ -19,41 +18,41 @@ import {
 
 const features = [
   {
-    icon: Brain,
-    title: "Smart Recommendations",
-    desc: "AI analyzes your preferences to suggest events you'll love.",
+    icon: Filter,
+    title: "Smart Filters",
+    desc: "Find precisely what you need by filtering events by category, date, or price range.",
   },
   {
-    icon: TrendingUp,
-    title: "Attendance Prediction",
-    desc: "ML models predict turnout so you can plan capacity perfectly.",
+    icon: Heart,
+    title: "Curated Picks",
+    desc: "Browse handpicked selections and popular upcoming campus gatherings.",
   },
   {
     icon: Ticket,
-    title: "Automated Ticketing",
-    desc: "Seamless registration and instant digital ticket generation.",
+    title: "Seamless Ticketing",
+    desc: "Instantly register and receive secure digital passes with automatic QR generation.",
   },
   {
-    icon: MessageSquare,
-    title: "Sentiment Analysis",
-    desc: "NLP-powered feedback analysis to improve future events.",
+    icon: Lock,
+    title: "Secure Checkout",
+    desc: "Complete paid bookings securely using integrated Razorpay checkouts or sandboxes.",
   },
   {
     icon: Activity,
     title: "Real-time Analytics",
-    desc: "Live dashboard with attendance metrics and engagement stats.",
+    desc: "Live dashboard monitoring attendee registrations and revenue metrics.",
   },
   {
-    icon: Lock,
-    title: "Secure Auth",
-    desc: "Enterprise-grade authentication with NextAuth.js integration.",
+    icon: Users,
+    title: "Collaborative Events",
+    desc: "Create and coordinate speaker lists, sub-events, and roles effortlessly.",
   },
 ];
 
 const stats = [
   { value: "10K+", label: "Events Created" },
   { value: "50K+", label: "Tickets Booked" },
-  { value: "95%", label: "Prediction Accuracy" },
+  { value: "Instant", label: "Digital Passes" },
   { value: "4.9★", label: "User Rating" },
 ];
 
@@ -138,7 +137,7 @@ export default async function Home() {
             className="badge badge-primary"
             style={{ marginBottom: "1.5rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
-            <Sparkles size={12} /> Powered by Artificial Intelligence
+            <Sparkles size={12} /> The Premier Campus Event Platform
           </div>
           <h1
             style={{
@@ -149,8 +148,8 @@ export default async function Home() {
               marginBottom: "1.5rem",
             }}
           >
-            The Future of{" "}
-            <span className="gradient-text">Event Management</span> is Here
+            Discover & Create{" "}
+            <span className="gradient-text">Unforgettable Events</span>
           </h1>
           <p
             style={{
@@ -161,8 +160,8 @@ export default async function Home() {
               lineHeight: 1.7,
             }}
           >
-            Create, discover, and manage events with AI-powered
-            recommendations, predictive analytics, and smart automation.
+            Create, discover, and manage campus events with real-time ticketing,
+            dashboard analytics, and secure checkout options.
           </p>
           <div
             style={{
@@ -401,8 +400,8 @@ export default async function Home() {
               margin: "0 auto 2.5rem",
             }}
           >
-            Join thousands of organizers who use AI to create unforgettable
-            experiences.
+            Join thousands of organizers who plan and manage unforgettable
+            experiences effortlessly.
           </p>
           <Link
             href="/auth/signup"

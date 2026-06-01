@@ -78,60 +78,73 @@ export async function POST(request: Request) {
       userId = defaultUser.id;
     }
 
-    // Check if event exists
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      include: {
-        _count: {
-          select: { tickets: true },
+    // Use a transaction to ensure capacity is not exceeded by concurrent requests
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Get the current ticket count and capacity for the event
+      const event = await tx.event.findUnique({
+        where: { id: eventId },
+        select: { 
+          capacity: true, 
+          category: true,
+          _count: { select: { tickets: true } } 
         },
-      },
+      });
+
+      if (!event) {
+        throw new Error("EVENT_NOT_FOUND");
+      }
+
+      // 2. Check capacity
+      if (event._count.tickets >= event.capacity) {
+        throw new Error("SOLD_OUT");
+      }
+
+      // 3. Check for existing booking
+      const existingTicket = await tx.ticket.findFirst({
+        where: { eventId, userId },
+      });
+
+      if (existingTicket) {
+        throw new Error("ALREADY_BOOKED");
+      }
+
+      // 4. Generate unique ticket number
+      const ticketNo = `UNI-${event.category.substring(0, 3)}-${Math.random()
+        .toString(36)
+        .substring(2, 8)
+        .toUpperCase()}`;
+
+      // 5. Create the ticket
+      return await tx.ticket.create({
+        data: {
+          userId,
+          eventId,
+          ticketNo,
+          status: "CONFIRMED",
+        },
+        include: {
+          event: true,
+        },
+      });
     });
 
-    if (!event) {
+    return NextResponse.json(
+      { message: "Registration successful! Ticket booked.", ticket: result },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    if (error.message === "EVENT_NOT_FOUND") {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
-
-    // Check capacity
-    if (event._count.tickets >= event.capacity) {
+    if (error.message === "SOLD_OUT") {
       return NextResponse.json({ error: "Event is fully booked!" }, { status: 400 });
     }
-
-    // Check if already registered
-    const existingTicket = await prisma.ticket.findFirst({
-      where: { eventId, userId },
-    });
-
-    if (existingTicket) {
+    if (error.message === "ALREADY_BOOKED") {
       return NextResponse.json(
         { error: "You have already registered for this event!" },
         { status: 400 }
       );
     }
-
-    // Generate unique ticket number
-    const ticketNo = `UNI-${event.category.substring(0, 3)}-${Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase()}`;
-
-    const ticket = await prisma.ticket.create({
-      data: {
-        userId,
-        eventId,
-        ticketNo,
-        status: "CONFIRMED",
-      },
-      include: {
-        event: true,
-      },
-    });
-
-    return NextResponse.json(
-      { message: "Registration successful! Ticket booked.", ticket },
-      { status: 201 }
-    );
-  } catch (error: any) {
     console.error("Error booking ticket:", error);
     return NextResponse.json({ error: "Failed to book ticket" }, { status: 500 });
   }

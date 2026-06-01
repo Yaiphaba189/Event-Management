@@ -16,15 +16,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EventAI - AI-Powered Event Management",
+  title: "Evently - Premier Event Management",
   description:
-    "Discover, create, and manage events with AI-powered recommendations, attendance prediction, and smart analytics.",
+    "Discover, create, and manage events with real-time ticketing, digital invoices, and dashboard analytics.",
   keywords: [
     "event management",
-    "AI events",
+    "events",
     "ticketing",
     "event planning",
-    "smart recommendations",
+    "dashboard analytics",
   ],
 };
 
