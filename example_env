@@ -18,6 +18,6 @@ NEXTAUTH_URL="http://localhost:3000"
 AI_SERVICE_URL="http://localhost:8050"
 
 # Razorpay Standard Gateway Integration Keys
-RAZORPAY_KEY_ID="rzp_test_SwIWtmNZ0bJoaF"
-RAZORPAY_KEY_SECRET="LswJspRWTFl3O6OpjKOE19Pt"
-NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_SwIWtmNZ0bJoaF"
+RAZORPAY_KEY_ID="rzp_test_SwMUHnhBXxjcd3"
+RAZORPAY_KEY_SECRET="MkgcF7fG5ahftNWoB9CrHioT"
+NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_SwMUHnhBXxjcd3"
